@@ -3,7 +3,9 @@ setlocal
 
 set DEVICE_NAME=clash-tap
 
-set PATH=%PATH%;%SystemRoot%\system32;%SystemRoot%\system32\wbem;%SystemRoot%\system32\WindowsPowerShell/v1.0
+set PATH=%PATH%;"%~dp0App\tap";%SystemRoot%\system32;%SystemRoot%\system32\wbem;%SystemRoot%\system32\WindowsPowerShell/v1.0
+cd ./App
+cd ./tap
 
 netsh interface show interface name=%DEVICE_NAME% >nul
 if %errorlevel% equ 0 (

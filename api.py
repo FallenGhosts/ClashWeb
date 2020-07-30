@@ -60,55 +60,90 @@ def login():
 
             if clash == '启动Clash':
                 try:
-                    currentconfig = api.admin.getfile('./App/tmp.vbs')
-                    currentconfig = str(currentconfig).split('-f')[1].split('\"')[0].replace(' ','').replace('.\\Profile\\','')
-                    p=subprocess.Popen(mypath+'/bat/start.bat',shell=False)            
-                    p.wait() 
-                    print('start clash')
-                    path=mypath+'/Profile/'+currentconfig
-                    path=path.replace('/','\\')
-                    p=requests.put(clashapi+'configs',data=json.dumps({'path':path}))     
-                    if '' == p.text:
-                        clash = '关闭Clash'
-                        isclash = 'Clash 正在运行'
-                        try:                            
-                            api.clashapi.setproxies('./Profile/save/'+currentconfig.replace('.yaml','.txt'))  
-                            print('加载保存的节点选择')
-                            print('./Profile/'+currentconfig.replace('.yaml','.txt'))
-                        except:
-                            flash('1.当前配置未保存过节点。 无妨，Clash已成功启动！') 
-                    else:
-                        clash = '启动Clash'
-                        isclash = 'Clash启动失败:'+p.text+'   '          
-                    if api.ini.getvalue('SET','opensysafterstartclash') == 'True':
-                        p=subprocess.Popen(mypath+'/bat/setsys.bat',shell=False)
-                        p.wait()
-                        print("启动系统代理")
-                        issys = '系统代理：开启'
-                        sysproxy = '关闭系统代理'
-                    flash(isclash+' '+issys)
-                    return render_template('login.html',clash=clash,sysproxy=sysproxy)
-                except :
-                    flash('启动Clash失败')    
+                        mode=api.admin.getfile('./api/currentmode.py')
+                        if 'nomal' in mode:
+                            mode = '普通模式'
+                            print(mode)
+                            currentconfig = api.admin.getfile('./App/tmp.vbs')
+                            currentconfig = str(currentconfig).split('-f')[1].split('\"')[0].replace(' ','').replace('.\\Profile\\','')
+                            p=subprocess.Popen(mypath+'/bat/start.bat',shell=False)            
+                            p.wait() 
+                            path=mypath+'/Profile/'+currentconfig
+                            path=path.replace('/','\\')
+                            p=requests.put(clashapi+'configs',data=json.dumps({'path':path}))   
+                            print(p.text)  
+                            if '' == p.text: 
+                                clash = '关闭Clash'
+                                isclash = 'Clash 正在运行'                                                    
+                                api.clashapi.setproxies('./Profile/save/'+currentconfig.replace('.yaml','.txt'))              
+                                if api.ini.getvalue('SET','opensysafterstartclash') == 'True':
+                                    p=subprocess.Popen(mypath+'/bat/setsys.bat',shell=False)
+                                    p.wait()
+                                    issys = '系统代理：开启'
+                                    sysproxy = '关闭系统代理'
+                            else:
+                                clash = '启动Clash'
+                                isclash = 'Clash启动失败:'+p.text+'   '
+                        else:
+                            mode = 'Tap模式'
+                            print(mode)
+                            currentconfig = api.admin.getfile('./App/tmp.vbs')                      #获取当前文件
+                            currentconfig = str(currentconfig).split('-f')[1].split('\"')[0].replace(' ','').replace('.\\Profile\\','')
+                            #把普通配置重写为tap配置
+                            tapconfig=api.admin.getfile('./Profile/defaultconfig/tapconfig.txt')
+                            config=api.admin.getfile('./Profile/'+currentconfig)
+                            config=tapconfig+'\nproxies:'+config.split('proxies:',1)[1]       
+                            api.admin.writefile(config,'./Profile/tapconfig/'+currentconfig)         
+                            #重写完成
+                            p=subprocess.Popen(mypath+'/App/tap/ahktapstart.bat',shell=False)              #启动tap    
+                            p.wait() 
+                            p=subprocess.Popen(mypath+'/bat/tapstart.bat',shell=False)              #启动默认tap文件    
+                            p.wait() 
+                            path=mypath+'/Profile/tapconfig/'+currentconfig
+                            path=path.replace('/','\\')
+                            p=requests.put(clashapi+'configs',data=json.dumps({'path':path}))       #切换成默认文件
+                            print(p.text)  
+                            if '' == p.text: 
+                                print('1') 
+                                clash = '关闭Clash'
+                                isclash = 'Clash 正在运行'                    
+                                api.clashapi.setproxies('./Profile/save/'+currentconfig.replace('.yaml','.txt'))       #设置节点   
+                            else:
+                                print('2')
+                                clash = '启动Clash'
+                                isclash = 'Clash启动失败:'+p.text+'   '
+                            p=subprocess.Popen(mypath+'/bat/dissys.bat',shell=False)
+                            p.wait()  
+                            issys = '系统代理：关闭'
+                            sysproxy = '开启系统代理'
+                        flash(isclash+' '+issys+'   当前模式:'+mode)
+                        return render_template('login.html',clash=clash,sysproxy=sysproxy)
+
+                except Exception as e:
+                    print(e)
+                    flash('未知错误，启动Clash失败')    
                     return redirect(ip)
+
+
             if clash == '关闭Clash':
                 try:
+                    mode=api.admin.getfile('./api/currentmode.py')
+                    if 'tap' in mode:
+                        p=subprocess.Popen(mypath+'/App/tap/ahktapstop.bat',shell=False)
+                        p.wait()  
                     currentconfig = api.admin.getfile('./App/tmp.vbs')
-                    currentconfig = str(currentconfig).split('-f')[1].split('\"')[0].replace(' ','').replace('.yaml','.txt').replace('.\\Profile\\','')
+                    currentconfig = str(currentconfig).split('-f')[1].split('\"')[0].replace(' ','').replace('.yaml','.txt').replace('.\\Profile\\','')     
                     try:
                         api.clashapi.getallproxies('./Profile/save/'+currentconfig)    
-                        print('保存当前节点选择成功') 
                     except:
-                        pass                  
+                        pass                    
                     p=subprocess.Popen(mypath+'/bat/stop.bat',shell=False)
-                    p.wait()
-                    #os.system('taskkill /IM clash-win64.exe  1>NUL 2>NUL')  
-                    print('stop Clash')
+                    p.wait()     
                     flash('Clash 未运行 '+'系统代理：关闭')
                     return render_template('login.html',clash='启动Clash',sysproxy='开启系统代理')
                 except :
                     flash('关闭Clash失败')
-                    return redirect(ip)
+                    return redirect(ip)           
         if request.form['submit'] == '切换 节点':
             clash = request.form.get('clash')
             sysproxy = request.form.get('sysproxy')
@@ -142,7 +177,12 @@ def login():
     else:
         sysproxy = '关闭系统代理'
         issys = '系统代理：开启'
-    flash(isclash+'\n'+issys) 
+    mode= api.admin.getfile('./api/currentmode.py')
+    if 'tap' in mode:
+        mode = 'Tap模式'
+    else:
+        mode = '普通模式'
+    flash(isclash+'\n'+issys+'  当前模式：'+mode) 
     return render_template('login.html',clash=clash,sysproxy=sysproxy)
 
 @app.route('/profiles', methods=['GET', 'POST'])
@@ -243,6 +283,8 @@ def profiles():
                             config=tapconfig+'\nproxies:'+config.split('proxies:',1)[1]       
                             api.admin.writefile(config,'./Profile/tapconfig/'+currentconfig)         
                             #重写完成
+                            p=subprocess.Popen(mypath+'/App/tap/ahktapstart.bat',shell=False)              #启动tap    
+                            p.wait() 
                             p=subprocess.Popen(mypath+'/bat/tapstart.bat',shell=False)              #启动默认tap文件    
                             p.wait() 
                             path=mypath+'/Profile/tapconfig/'+currentconfig
@@ -321,6 +363,8 @@ def profiles():
                             config=tapconfig+'\nproxies:'+config.split('proxies:',1)[1]       
                             api.admin.writefile(config,'./Profile/tapconfig/'+currentconfig)         
                             #重写完成
+                            p=subprocess.Popen(mypath+'/App/tap/ahktapstart.bat',shell=False)              #启动tap    
+                            p.wait() 
                             p=subprocess.Popen(mypath+'/bat/tapstart.bat',shell=False)              #启动默认tap文件    
                             p.wait() 
                             path=mypath+'/Profile/tapconfig/'+currentconfig
