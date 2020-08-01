@@ -16,8 +16,6 @@
   ![image](https://github.com/lzdnico/ClashWeb/blob/master/images/gist.png) <br/>
 
 # 其他
-   - 关注频道：https://t.me/niconewbeeeapi
-   - 有用的话，欢迎TG打赏: https://t.me/niconewbeeeapi/134
    - 项目基于subweb：https://github.com/lzdnico/subweb
    - 项目基于subconverter：https://github.com/tindy2013/subconverter
    - 纯bat版本1：https://github.com/pcysanji/Clash-Web-Bat
