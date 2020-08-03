@@ -13,7 +13,10 @@ def Retry_request(url): #远程下载
     i = 0
     for i in range(2):
         try:
-            res = requests.get(url) # verify =false 防止请求时因为代理导致证书不安全
+            headers = {
+                "User-Agent": "ClashforWindows/<0.11.3>"
+            }
+            res = requests.get(url, headers = headers) # verify =false 防止请求时因为代理导致证书不安全
             return res.text
         except Exception as e:
             i = i+1
