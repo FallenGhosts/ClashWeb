@@ -39,22 +39,24 @@ Menu, Submenu2, Add, 关闭系统代理, dissys
 Menu, tray, add, 系统代理, :Submenu2
 
 Menu, Tray, Add  ; 创建分隔线.
+Menu, Submenu6, Add  ; 
 Menu, Submenu5, Add, 打开控制台, clashweb 
 Menu, Submenu5, Add, 关闭控制台, MenuHandlerstoppython  
-Menu, tray, add, 控制后台, :Submenu5
-Menu, Submenu6, Add, 系统代理设置, defautlsys
+Menu, Submenu6, add, 控制后台, :Submenu5
 Menu, Submenu6, Add, 面板设置, defaultdashboard 
 Menu, Submenu6, Add, 内核设置, defautlcore 
 Menu, Submenu6, Add, Geoip设置, defaultgeoip
-Menu, Submenu6, Add, 控制台端口, defautlclashwebpoart
+Menu, Submenu6, Add  ; 
+Menu, Submenu6, Add, 控制后台端口, defautlclashwebpoart
+Menu, Submenu6, Add, 默认系统代理, defautlsys
 Menu, Submenu6, Add, 开机自启设置, bootset
+Menu, Submenu6, Add  ; 
 Menu, Submenu6, Add, UWP回环, uwp
+Menu, Submenu6, Add, 帮助/捐赠, help
+Menu, Submenu6, Add  ; 
 Menu, tray, add, 其他设置, :Submenu6
- 
-Menu, Tray, Add  ; 创建分隔线.
 Menu, Tray, Click, OnClick 
 Menu, Tray, Add, 检查状态, OnClick
-Menu, Tray, Add, 帮助/捐赠, help
 Menu, Tray, Add, 退出, MenuHandlerexit  
 Menu, Tray, Default, 检查状态
 Menu, Tray, Add  ; 创建分隔线.

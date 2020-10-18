@@ -241,6 +241,7 @@ if __name__ == '__main__':
                  
         except:
             pass
+        
     if gpus == 'directmode':
         try:
             api.clashapi.setmode('Direct')                  
